@@ -6,13 +6,33 @@ import axios from "axios";
 
 export default class PokemonList extends Component {
   state = {
-    url: "https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0",
+    url: null,
     pokemon: null,
   };
 
   async componentDidMount() {
-    const res = await axios.get(this.state.url);
-    this.setState({ pokemon: res.data["results"] });
+    let limit = 32;
+    const loadMorePokemons = async () => {
+      this.state.url = `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=0`;
+      const res = await axios.get(this.state.url);
+      this.setState({ pokemon: res.data["results"] });
+      limit += 32;
+    };
+
+    loadMorePokemons();
+
+    function handleScroll(e) {
+      if (
+        window.innerHeight + e.target.documentElement.scrollTop + 1 >=
+        e.target.documentElement.scrollHeight
+      ) {
+        if (limit <= 99968) {
+          loadMorePokemons();
+        }
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll);
   }
 
   render() {
